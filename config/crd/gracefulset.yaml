@@ -1,0 +1,113 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: gracefulsets.apps.infor.com
+spec:
+  group: apps.infor.com
+  names:
+    kind: GracefulSet
+    listKind: GracefulSetList
+    plural: gracefulsets
+    singular: gracefulset
+    shortNames:
+      - gs
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Version
+          type: string
+          jsonPath: .status.activeVersion
+        - name: Ready
+          type: integer
+          jsonPath: .status.readyReplicas
+        - name: Draining
+          type: integer
+          jsonPath: .status.drainingPods
+        - name: Total
+          type: integer
+          jsonPath: .status.totalPods
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: ["version", "selector", "template"]
+              properties:
+                replicas:
+                  type: integer
+                  minimum: 0
+                  default: 1
+                version:
+                  type: string
+                drainPolicy:
+                  type: object
+                  properties:
+                    mode:
+                      type: string
+                      enum: ["WaitForCompletion", "TTL", "Manual"]
+                      default: "WaitForCompletion"
+                    ttl:
+                      type: string
+                    maxDrainingPods:
+                      type: integer
+                      default: 20
+                selector:
+                  type: object
+                  properties:
+                    matchLabels:
+                      type: object
+                      additionalProperties:
+                        type: string
+                template:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                activeVersion:
+                  type: string
+                readyReplicas:
+                  type: integer
+                totalPods:
+                  type: integer
+                drainingPods:
+                  type: integer
+                drainingVersions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                      pods:
+                        type: integer
+                      readyPods:
+                        type: integer
+                      oldestPodCreation:
+                        type: string
+                        format: date-time
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time

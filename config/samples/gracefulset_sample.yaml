@@ -1,0 +1,37 @@
+apiVersion: apps.infor.com/v1alpha1
+kind: GracefulSet
+metadata:
+  name: foundation-interactive
+  namespace: m3-apps
+spec:
+  replicas: 3
+  version: "2024.1.0"
+  drainPolicy:
+    mode: WaitForCompletion
+    maxDrainingPods: 10
+  selector:
+    matchLabels:
+      app: foundation-interactive
+  template:
+    metadata:
+      labels:
+        app: foundation-interactive
+        gracefulset.infor.com/name: foundation-interactive
+    spec:
+      containers:
+        - name: foundation
+          image: 927411430400.dkr.ecr.us-east-1.amazonaws.com/cm3/release/foundation:2024.1.0
+          ports:
+            - containerPort: 10080
+              name: metrics
+          env:
+            - name: CONTAINER_NODE_TYPE
+              value: Interactive
+            - name: HEAP_INITIAL_SIZE_MB
+              value: "9216"
+            - name: HEAP_MAX_SIZE_MB
+              value: "9216"
+          resources:
+            requests:
+              cpu: "4"
+              memory: 18Gi
