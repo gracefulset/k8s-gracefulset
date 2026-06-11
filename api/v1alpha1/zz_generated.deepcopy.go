@@ -33,11 +33,31 @@ func (in *DrainPolicy) DeepCopyInto(out *DrainPolicy) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.DrainCheck != nil {
+		in, out := &in.DrainCheck, &out.DrainCheck
+		*out = new(DrainCheck)
+		**out = **in
+	}
 	if in.MaxDrainingPods != nil {
 		in, out := &in.MaxDrainingPods, &out.MaxDrainingPods
 		*out = new(int32)
 		**out = **in
 	}
+}
+
+// DeepCopyInto is a deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *DrainCheck) DeepCopyInto(out *DrainCheck) {
+	*out = *in
+}
+
+// DeepCopy is a deepcopy function, copying the receiver, creating a new DrainCheck.
+func (in *DrainCheck) DeepCopy() *DrainCheck {
+	if in == nil {
+		return nil
+	}
+	out := new(DrainCheck)
+	in.DeepCopyInto(out)
+	return out
 }
 
 // DeepCopy is a deepcopy function, copying the receiver, creating a new DrainPolicy.

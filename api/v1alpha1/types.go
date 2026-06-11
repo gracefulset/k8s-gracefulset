@@ -10,19 +10,52 @@ type DrainPolicyMode string
 
 const (
 	DrainPolicyWaitForCompletion DrainPolicyMode = "WaitForCompletion"
-	DrainPolicyTTL              DrainPolicyMode = "TTL"
-	DrainPolicyManual           DrainPolicyMode = "Manual"
+	DrainPolicyWaitForDrain      DrainPolicyMode = "WaitForDrain"
+	DrainPolicyTTL               DrainPolicyMode = "TTL"
+	DrainPolicyManual            DrainPolicyMode = "Manual"
 )
+
+// DrainCheck configures how the controller polls a pod to determine whether it
+// has finished serving and is safe to remove. Used by the WaitForDrain mode.
+type DrainCheck struct {
+	// Path is the HTTP path to poll on the pod (e.g. /drain-status)
+	// +kubebuilder:default=/drain-status
+	Path string `json:"path,omitempty"`
+
+	// Port is the container port to poll
+	// +kubebuilder:default=8080
+	Port int32 `json:"port,omitempty"`
+
+	// Scheme is HTTP or HTTPS
+	// +kubebuilder:validation:Enum=HTTP;HTTPS
+	// +kubebuilder:default=HTTP
+	Scheme string `json:"scheme,omitempty"`
+
+	// PeriodSeconds is how often to poll the drain endpoint
+	// +kubebuilder:default=30
+	PeriodSeconds int32 `json:"periodSeconds,omitempty"`
+
+	// A pod is considered drained when the response body contains this JSON field
+	// set to zero. For example, with JSONField "inflight", a response of
+	// {"inflight": 0} means the pod is safe to remove.
+	// +kubebuilder:default=inflight
+	JSONField string `json:"jsonField,omitempty"`
+}
 
 // DrainPolicy defines how old version pods should be handled
 type DrainPolicy struct {
 	// Mode determines the drain behavior
-	// +kubebuilder:validation:Enum=WaitForCompletion;TTL;Manual
+	// +kubebuilder:validation:Enum=WaitForCompletion;WaitForDrain;TTL;Manual
 	Mode DrainPolicyMode `json:"mode"`
 
-	// TTL is the duration after which old pods are force-deleted (only used with TTL mode)
+	// TTL is the duration after which old pods are force-deleted.
+	// Used with TTL mode, or as a safety cap with WaitForDrain.
 	// +optional
 	TTL *metav1.Duration `json:"ttl,omitempty"`
+
+	// DrainCheck configures the HTTP drain probe (only used with WaitForDrain mode)
+	// +optional
+	DrainCheck *DrainCheck `json:"drainCheck,omitempty"`
 
 	// MaxDrainingPods is the maximum number of old pods allowed to be draining at once
 	// +optional
@@ -88,10 +121,16 @@ type GracefulSetStatus struct {
 	// Conditions represent the latest available observations
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// Selector is the label selector in string form, required by the scale subresource
+	// so that HPA can identify the pods belonging to this GracefulSet.
+	// +optional
+	Selector string `json:"selector,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.readyReplicas,selectorpath=.status.selector
 // +kubebuilder:printcolumn:name="Version",type=string,JSONPath=`.status.activeVersion`
 // +kubebuilder:printcolumn:name="Ready",type=integer,JSONPath=`.status.readyReplicas`
 // +kubebuilder:printcolumn:name="Draining",type=integer,JSONPath=`.status.drainingPods`
