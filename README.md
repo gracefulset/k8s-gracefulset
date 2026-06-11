@@ -58,6 +58,35 @@ Not a fit (use StatefulSet or a dedicated operator instead):
 - Databases — need single-writer semantics + stable storage
 - Message brokers (Kafka, RabbitMQ, ZooKeeper) — need stable identity + storage
 
+## Comparison with Deployment, OpenKruise, and Argo Rollouts
+
+| | Deployment | OpenKruise CloneSet | Argo Rollouts | GracefulSet |
+|--|-----------|--------------------|--------------| ------------|
+| Upgrade model | Rolling replace (kills old pods) | Controlled replace, in-place updates | Canary / blue-green progressive | **Old pods never replaced** |
+| Version coexistence | Transient during rollout | Transient during rollout | Transient during rollout | **Indefinite until work completes** |
+| Who decides a pod dies | Controller (on its schedule) | Controller (+ PreDelete hook) | Controller (+ analysis) | **The application** (drain signal / process exit) |
+| Built-in drain check | No (just terminationGracePeriod) | PreDelete hook you clear externally | No | **Yes — HTTP poll / process exit / TTL** |
+| Scale-down behavior | Kills excess pods | Configurable ordering, still deletes | Kills excess pods | **Drains excess pods, app exits cleanly** |
+| Needs stable storage/identity | No | Optional (Advanced StatefulSet) | No | No |
+
+### How it differs in one sentence
+
+- **Deployment / Argo Rollouts / CloneSet** answer: *"How do I safely replace old pods with new ones at a controlled pace?"*
+- **GracefulSet** answers: *"How do I let the old generation of pods live until their in-flight work organically finishes, without the controller ever forcing them out?"*
+
+### When to choose which
+
+| Need | Use |
+|------|-----|
+| Progressive/canary delivery with traffic shifting and metric analysis | **Argo Rollouts** |
+| Advanced rolling updates, in-place image swaps, broad workload features | **OpenKruise** |
+| Standard stateless rolling update | **Deployment** |
+| Old pods must finish long-lived sessions/work before going away, with zero hook plumbing | **GracefulSet** |
+
+### Relationship to OpenKruise
+
+Much of GracefulSet's behavior can be approximated with OpenKruise CloneSet + a `PreDelete` lifecycle hook plus an external process that clears the hook once a pod has drained. GracefulSet's distinction is making this a first-class, zero-plumbing model: generational coexistence is the default behavior, and the drain check (HTTP poll / process exit / TTL) is built in rather than wired up with sidecars and hook-clearing controllers.
+
 ## Usage
 
 ```yaml
