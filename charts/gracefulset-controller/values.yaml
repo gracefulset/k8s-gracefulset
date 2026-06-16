@@ -1,0 +1,32 @@
+# Default values for gracefulset-controller
+
+replicaCount: 2
+
+image:
+  repository: gracefulsetio/gracefulset-controller
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: gracefulset-controller
+
+leaderElection:
+  enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+metrics:
+  port: 8080
+
+health:
+  port: 8081

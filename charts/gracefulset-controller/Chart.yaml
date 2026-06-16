@@ -1,0 +1,18 @@
+apiVersion: v2
+name: gracefulset-controller
+description: Kubernetes controller for GracefulSet - zero-disruption upgrades and scaling for session-holding workloads
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - kubernetes
+  - operator
+  - graceful
+  - deployment
+  - sessions
+  - drain
+home: https://github.com/gracefulset-io/gracefulset
+sources:
+  - https://github.com/gracefulset-io/gracefulset
+maintainers:
+  - name: pkashyap
