@@ -1,3 +1,27 @@
 apiVersion: v1
-entries: {}
-generated: "2026-06-16T00:00:00Z"
+entries:
+  gracefulset-controller:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-06-17T09:27:16.08686733Z"
+    description: Kubernetes controller for GracefulSet - zero-disruption upgrades
+      and scaling for session-holding workloads
+    digest: b6922a11908ed532a437e136df7d4a7befae860134eec640435990954104fbfd
+    home: https://github.com/gracefulset-io/gracefulset
+    keywords:
+    - kubernetes
+    - operator
+    - graceful
+    - deployment
+    - sessions
+    - drain
+    maintainers:
+    - name: pkashyap
+    name: gracefulset-controller
+    sources:
+    - https://github.com/gracefulset-io/gracefulset
+    type: application
+    urls:
+    - https://gracefulset.github.io/k8s-gracefulset/gracefulset-controller-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-06-17T09:27:16.08642978Z"
