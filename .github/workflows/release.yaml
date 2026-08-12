@@ -28,7 +28,9 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "TIMESTAMP=$(date -u +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: Build and Push
         uses: docker/build-push-action@v5
@@ -38,6 +40,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             pradyumnakashyap/gracefulset-controller:${{ steps.version.outputs.VERSION }}
+            pradyumnakashyap/gracefulset-controller:${{ steps.version.outputs.TIMESTAMP }}
             pradyumnakashyap/gracefulset-controller:latest
 
   helm:
