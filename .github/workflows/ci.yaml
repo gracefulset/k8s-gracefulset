@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: azure/setup-helm@v4
+      - name: Install controller-gen and setup-envtest
+        run: make tools
+      - name: Generated code and CRD are up to date
+        run: make verify
+      - name: Lint
+        run: make lint
+      - name: Test
+        run: make test
+      - name: Build image
+        run: make docker-build IMG=gracefulset-controller:ci

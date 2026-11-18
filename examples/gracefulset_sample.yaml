@@ -22,7 +22,6 @@ spec:
     metadata:
       labels:
         app: my-app
-        gracefulset.io/name: my-app
     spec:
       containers:
         - name: app
@@ -53,6 +52,9 @@ spec:
     mode: WaitForDrain
     ttl: 24h                 # safety cap: force-remove a pod still draining after 24h
     maxDrainingPods: 10
+    drainHook:               # optional: POSTed once when a pod starts draining
+      path: /drain
+      port: 8080
     drainCheck:
       path: /drain-status
       port: 8080
@@ -66,7 +68,6 @@ spec:
     metadata:
       labels:
         app: session-app
-        gracefulset.io/name: session-app
     spec:
       containers:
         - name: app

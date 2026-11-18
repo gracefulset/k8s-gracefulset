@@ -13,6 +13,18 @@ serviceAccount:
 
 leaderElection:
   enabled: true
+# Only manage GracefulSets in this namespace ("" = all namespaces)
+watchNamespace: ""
+rbac:
+  # Grant pods/exec, needed only for Exec drain checks. This lets the controller
+  # exec into any pod it can see, so it is off by default.
+  podExec: false
+# GracefulSets reconciled in parallel
+maxConcurrentReconciles: 4
+# PodDisruptionBudget for the controller pods (only rendered when replicaCount > 1)
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
 
 resources:
   requests:
@@ -27,6 +39,9 @@ affinity: {}
 
 metrics:
   port: 8080
+  # Expose metrics through a Service (e.g. for a Prometheus ServiceMonitor)
+  service:
+    enabled: false
 
 health:
   port: 8081

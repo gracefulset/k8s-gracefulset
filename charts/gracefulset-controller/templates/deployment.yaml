@@ -21,6 +21,10 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -40,6 +44,10 @@ spec:
           args:
             - --metrics-bind-address=:{{ .Values.metrics.port }}
             - --health-probe-bind-address=:{{ .Values.health.port }}
+            - --max-concurrent-reconciles={{ .Values.maxConcurrentReconciles }}
+            {{- with .Values.watchNamespace }}
+            - --watch-namespace={{ . }}
+            {{- end }}
             {{- if .Values.leaderElection.enabled }}
             - --leader-elect
             {{- end }}
@@ -68,3 +76,5 @@ spec:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
